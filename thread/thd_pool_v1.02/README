@@ -1,0 +1,29 @@
+simple thread pool
+======
+
+Tt is a simple thread pool based on POSIX thread API.
+It is written in C and licensed under the LGPL-2.1 (see COPYING).
+
+Version: 1.02
+
+Homepage:
+https://sourceforge.net/projects/thd-pool-linux/
+
+Mail for questions:
+- Weirong Yang <boyce.ywr@gmail.com>
+
+
+INSTALL:
+	$ cd build
+	$ cmake ..
+	$ make 
+RUN:
+	$ bin/tp_test
+
+History:
+1.01
+
+1.02
+	fixed some bugs;
+	add some features;
+	
