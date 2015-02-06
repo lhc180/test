@@ -20,8 +20,14 @@ int main(int argc, char *argv[])
 	uint8_t *buffer;
 	struct SwsContext *pSwsCtx;
 
+	if(argc < 2)
+	{
+		printf("Useage: ./simple_player <filename>");
+	}
+
 	av_register_all();
-	const char *filename = "";
+	char filename[256];
+	strcpy(filename, argv[1]);
 
 	pFormatCtx = avformat_alloc_context();
 	if(avformat_open_input(&pFormatCtx, filename, NULL, NULL) != 0)
@@ -53,8 +59,8 @@ int main(int argc, char *argv[])
 	if(avcodec_open2(pCodecCtx, pCodec, NULL) < 0)
 		return -1;
 
-	pFrame = avcodec_alloc_frame();
-	pFrameRGB = avcodec_alloc_frame();
+	pFrame = av_frame_alloc();
+	pFrameRGB = av_frame_alloc();
 
 	if(pFrameRGB == NULL)
 		return -1;
@@ -69,7 +75,7 @@ int main(int argc, char *argv[])
 	{
 		if(packet.stream_index == videoStream)
 		{
-			pFrame = avcodec_alloc_frame();
+			pFrame = av_frame_alloc();
 			int w = pCodecCtx->width;
 			int h = pCodecCtx->height;
 
