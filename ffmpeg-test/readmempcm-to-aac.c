@@ -102,58 +102,43 @@ int main(int argc, char* argv[])
 	int got_frame=0;
 	int ret=0;
 	int size=0;
+	int framenum = 2000;
 
 	FILE *in_file=NULL;	                        //Raw PCM data
-	int framenum=2000;                          //Audio frame number
 	const char* out_file = "test.aac";          //Output URL
 	int i;
 
-//	in_file= fopen("test.pcm", "rb");
-//	in_file = fopen("test_44100_stereo_16bit.pcm", "rb");
-
 	//read .pcm from memory
-	AVFormatContext *ic = NULL;
-	ic = avformat_alloc_context();
-	unsigned char *iobuffer = (unsigned char*)av_malloc(32768);
-	AVIOContext *avio = avio_alloc_context(iobuffer, 32768, 0, NULL, fill_iobuffer, NULL, NULL);
-	ic->pb = avio;
-
 	av_register_all();
 
-	AVFormatContext *piFormatCtx;
-	piFormatCtx = avformat_alloc_context();
-	if(avformat_open_input(&piFormatCtx, argv[1], 0, 0)!=0)
-	{
-		printf("open source file failed\n");
-		return -1;
-	}
+	fp_open = fopen("test_44100_stereo_16bit.pcm", "rb");
 
-	if(avformat_find_stream_info(piFormatCtx, 0) < 0)
-	{
-		printf("Could not find stream info\n");
-		return -1;
-	}
+	pFormatCtx = avformat_alloc_context();
+	unsigned char *iobuffer = (unsigned char*)av_malloc(32768);
+	AVIOContext *avio = avio_alloc_context(iobuffer, 32768, 0, NULL, fill_iobuffer, NULL, NULL);
+	pFormatCtx->pb = avio;
 
-	printf("nb_streams: %d\n", piFormatCtx->nb_streams);
+	if ((ret = avformat_open_input(&pFormatCtx, "nothing", NULL, NULL) ) < 0) { 
+		printf( "Could not open input file.");
+		goto end;
+	}  
 
 	//Method 1.
-	pFormatCtx = avformat_alloc_context();
 	fmt = av_guess_format(NULL, out_file, NULL);
 	pFormatCtx->oformat = fmt;
-
 
 	//Method 2.
 	//avformat_alloc_output_context2(&pFormatCtx, NULL, NULL, out_file);
 	//fmt = pFormatCtx->oformat;
 
 	//Open output URL
-	if (avio_open(&pFormatCtx->pb,out_file, AVIO_FLAG_READ_WRITE) < 0){
+	if (avio_open(&pFormatCtx->pb, out_file, AVIO_FLAG_READ_WRITE) < 0){
 		printf("Failed to open output file!\n");
 		return -1;
 	}
 
 	audio_st = avformat_new_stream(pFormatCtx, 0);
-	if (audio_st==NULL){
+	if (audio_st == NULL){
 		return -1;
 	}
 	pCodecCtx = audio_st->codec;
@@ -191,13 +176,15 @@ int main(int argc, char* argv[])
 
 	av_new_packet(&pkt,size);
 
-//	for (i=0; i<framenum; i++){
-	while(1){
+	for (i=0; i<framenum; i++){
+
+//	while(1){
+//		i++;
 		//Read PCM
-		if (fread(frame_buf, 1, size, in_file) <= 0){
+		if (fread(frame_buf, 1, size, fp_open) <= 0){
 			printf("Failed to read raw data! \n");
 			return -1;
-		}else if(feof(in_file)){
+		}else if(feof(fp_open)){
 			break;
 		}
 		pFrame->data[0] = frame_buf;  //PCM Data
@@ -227,7 +214,7 @@ int main(int argc, char* argv[])
 
 	//Write Trailer
 	av_write_trailer(pFormatCtx);
-
+end:
 	//Clean
 	if (audio_st){
 		avcodec_close(audio_st->codec);
@@ -237,7 +224,7 @@ int main(int argc, char* argv[])
 	avio_close(pFormatCtx->pb);
 	avformat_free_context(pFormatCtx);
 
-	fclose(in_file);
+	fclose(fp_open);
 
 	return 0;
 }

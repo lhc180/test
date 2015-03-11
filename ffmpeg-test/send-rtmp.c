@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	//in_filename  = "cuc_ieschool.ts";
 	//in_filename  = "cuc_ieschool.mp4";
 	//in_filename  = "cuc_ieschool.h264";
-	in_filename  = "sample.flv";//输入URL（Input file URL）
+	in_filename  = "mv.mp4";//输入URL（Input file URL）
 	//in_filename  = "shanghai03_p.h264";
 
 	out_filename = "rtmp://192.168.174.133/myapp/mystream";//输出 URL（Output URL）[RTMP]
@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
 		printf( "Failed to retrieve input stream information");
 		goto end;
 	}
+
 
 	for(i=0; i<ifmt_ctx->nb_streams; i++) 
 		if(ifmt_ctx->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO){

@@ -82,17 +82,16 @@ int main(int argc, char* argv[])
 	AVFrame* pFrame;
 	AVPacket pkt;
 
-	int got_frame=0;
-	int ret=0;
-	int size=0;
+	int got_frame = 0;
+	int ret = 0;
+	int size = 0;
 
-	FILE *in_file=NULL;	                        //Raw PCM data
-	int framenum=1000;                          //Audio frame number
+	FILE *in_file = NULL;	                        //Raw PCM data
+	int framenum = 1000;                          //Audio frame number
 	const char* out_file = "test.aac";          //Output URL
 	int i;
 
-//	in_file= fopen("test.pcm", "rb");
-	in_file= fopen("test_44100_stereo_16bit.pcm", "rb");
+	in_file = fopen("test_44100_stereo_16bit.pcm", "rb");
 
 	av_register_all();
 
@@ -107,7 +106,7 @@ int main(int argc, char* argv[])
 	//fmt = pFormatCtx->oformat;
 
 	//Open output URL
-	if (avio_open(&pFormatCtx->pb,out_file, AVIO_FLAG_READ_WRITE) < 0){
+	if (avio_open(&pFormatCtx->pb, out_file, AVIO_FLAG_READ_WRITE) < 0){
 		printf("Failed to open output file!\n");
 		return -1;
 	}
@@ -134,24 +133,27 @@ int main(int argc, char* argv[])
 		printf("Can not find encoder!\n");
 		return -1;
 	}
-	if (avcodec_open2(pCodecCtx, pCodec,NULL) < 0){
+	if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0){
 		printf("Failed to open encoder!\n");
 		return -1;
 	}
-	pFrame = av_frame_alloc();
-	pFrame->nb_samples= pCodecCtx->frame_size;
-	pFrame->format= pCodecCtx->sample_fmt;
 
-	size = av_samples_get_buffer_size(NULL, pCodecCtx->channels,pCodecCtx->frame_size,pCodecCtx->sample_fmt, 1);
+	pFrame = av_frame_alloc();
+	pFrame->nb_samples = pCodecCtx->frame_size;
+	pFrame->format = pCodecCtx->sample_fmt;
+
+	size = av_samples_get_buffer_size(NULL, pCodecCtx->channels, pCodecCtx->frame_size,pCodecCtx->sample_fmt, 1);
+	/*size : 4096*/
 	frame_buf = (uint8_t *)av_malloc(size);
 	avcodec_fill_audio_frame(pFrame, pCodecCtx->channels, pCodecCtx->sample_fmt,(const uint8_t*)frame_buf, size, 1);
 
 	//Write Header
-	avformat_write_header(pFormatCtx,NULL);
+	avformat_write_header(pFormatCtx, NULL);
+	av_new_packet(&pkt, size);
 
-	av_new_packet(&pkt,size);
-
-	for (i=0; i<framenum; i++){
+//	for (i=0; i<framenum; i++){
+	while(1){
+		i++;
 		//Read PCM
 		if (fread(frame_buf, 1, size, in_file) <= 0){
 			printf("Failed to read raw data! \n");
@@ -159,19 +161,20 @@ int main(int argc, char* argv[])
 		}else if(feof(in_file)){
 			break;
 		}
-		pFrame->data[0] = frame_buf;  //PCM Data
 
-		pFrame->pts=i*100;
+		pFrame->data[0] = frame_buf;  //PCM Data
+		pFrame->pts=i * 100;
 		got_frame=0;
 		//Encode
-		ret = avcodec_encode_audio2(pCodecCtx, &pkt,pFrame, &got_frame);
+		ret = avcodec_encode_audio2(pCodecCtx, &pkt, pFrame, &got_frame);
 		if(ret < 0){
 			printf("Failed to encode!\n");
 			return -1;
 		}
-		if (got_frame==1){
-			printf("Succeed to encode 1 frame! \tsize:%5d\n",pkt.size);
+		if (got_frame == 1){
+	//		printf("Succeed to encode 1 frame! \tsize:%5d\n",pkt.size);
 			pkt.stream_index = audio_st->index;
+			printf("stream_index: %d\n", audio_st->index);
 			ret = av_write_frame(pFormatCtx, &pkt);
 			av_free_packet(&pkt);
 		}
