@@ -15,7 +15,7 @@ XML_STRING =
 			<params name="dial-string" value="{sip_invite_domain=${dialed_domain},presence_id=$={dialed_user}@${dialed_domain}}${sofia_contact(${dialed_user}@${dialed_domain})}"/>
 		</params>
 		<variables>
-		<variable name="toll_allow" value+"domestic, international,local"/>
+		<variable name="toll_allow" value="domestic, international,local"/>
 		<param name="accountcode" value="]]..req_user..[["/>
 		<variable name="user_context" value="default"/>
 		<param name="effective_caller_id_number" value="]]..req_user..[["/>
