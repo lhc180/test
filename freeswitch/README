@@ -2,3 +2,5 @@ Useage:
 		auto-install-centos6.sh -- install freeswitch and  create 10000-10999 users, then run freeswitch
 		./add_user.sh 10000 10999 --- create 10000-10999 users, passwd:1234
 		./remove_user.sh the same
+
+		gen_dir_user_xml.lua -- let anybody use freeswitch in free.
